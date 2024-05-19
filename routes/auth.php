@@ -20,9 +20,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-Route::prefix('auth')->group(function (){
-    return require_once base_path('routes/auth.php');
-});
+Route::post('signup',[AuthController::class,'signup']);
+Route::post('verify-email', [AuthController::class,'verify']);
+Route::post('login',[AuthController::class,'login']);
+Route::middleware('auth:sanctum')->get('logout',[AuthController::class,'logout']);
+Route::middleware('auth:sanctum')->get('refresh',[AuthController::class,'refresh']);

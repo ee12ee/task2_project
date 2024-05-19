@@ -2,7 +2,14 @@
 
 namespace App\Exceptions;
 
+use App\Http\Traits\ApiResponse;
+use Exception;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -43,8 +50,17 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(function (ValidationException $exception, $request) {
+            return ApiResponse::sendResponse(422,'',
+                ['errors' => $exception->validator->errors()->getMessages()]);
         });
-    }
-}
+        $this->renderable(function (NotFoundHttpException $exception, $request) {
+            if ( $exception->getPrevious() instanceof ModelNotFoundException){
+                return ApiResponse::sendResponse(404,'record not found');}
+                return ApiResponse::sendResponse(404,'route not found');}
+        );
+
+        $this->renderable(function (AuthenticationException $exception, $request) {
+            return ApiResponse::sendResponse(401,'Not Authenticated');
+        });
+}}
